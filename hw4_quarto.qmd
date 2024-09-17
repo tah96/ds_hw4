@@ -1,0 +1,78 @@
+---
+title: "Homework 4"
+format: html
+editor: visual
+---
+
+## Task 1 - Q&A
+
+1.  If your working directory is myfolder/homework/, what relative path would you specify to get the file located at myfolder/MyData.csv?
+<blockquote> 
+../MyData.csv
+</blockquote>
+2.  What are the major benefits of using R projects?
+<blockquote>
+Some major benefits to using an R project include version control through git commands, consistent working directory and reproducability through centralized organization.
+</blockquote>
+3. What is git and what is github? 
+<blockquote>
+Git is a version control software that can use a series of bash commands for interacting with a repository. Github is an online repository hosting platform where users can interact with the repository using git and other methods.
+</blockquote>
+4. What are the two main differences between a tibble and a data.frame?
+<blockquote>
+Tibbles utilize "fancy print" when printed, meaning the output looks cleaner compared to data frames and includes important details along with the first few records of the object.  Tibbles, however, do not coerce down to a vector when you subset to only one column using "[ ]"
+</blockquote>
+
+5. Rewrite the following nested function call using BaseR's chaining operator: arrange(filter(select(as_tibble(iris), starts_with("Petal"), Species),Petal.Length \< 1.55), Species)
+<blockquote>
+as_tibble(iris) |>
+  select(starts_with("Petal"),Species) |>
+  filter(Petal.Length < 1.55) |>
+  arrange(Species)
+</blockquote>
+
+## Task 2: Reading Delimited Data
+
+# Glass Data
+
+We are using the tidyverse library to read in the CSV at the URL. No headers are provided in the CSV, so we are creating our column names using CamelCase.
+
+```{r}
+library("tidyverse")
+
+glass <- read_csv("https://www4.stat.ncsu.edu/online/datasets/glass.data",col_names = c('Id','RI','Na','Mg','Al','Si','K','Ca','Ba','Fe','TypeOfGlass'),show_col_types = FALSE)
+
+glass
+
+```
+
+Now we're going to transform the data using the tidyverse and chaining. The transformations are:
+1. Overwrite TypeOfGlass variable by mapping integers to string values
+2. Filter where Fe (Iron) is less than 0.2 AND Type Of Glass is tableware or headlamps
+
+```{r}
+glass %>%
+  mutate(TypeOfGlass = factor(TypeOfGlass, levels = 1:7,labels = c("building_windows_float_processed", "building_windows_non_float_processed", "vehicle_windows_float_processed", "vehicle_windows_non_float_processed","containers","tableware","headlamps"))) %>%
+  filter(Fe < 0.2 & TypeOfGlass %in% c('tableware','headlamps'))
+```
+
+# Yeast Data
+
+The Yeast Data is a fixed_width delimited file. Lets read it in and account for widths
+
+```{r}
+yeast <- read_fwf(file="https://www4.stat.ncsu.edu/online/datasets/yeast.data",fwf_widths(c(12,6,6,6,6,6,6,6,6,6),c('SeqName','Mcg','Gvh','Alm','Mit','Erl','Pox','Vac','Nuc','Class')),show_col_types = FALSE)
+```
+
+Now we're going to transform the data using the tidyverse and chaining. The transformations are:
+1. Remove SeqName and Nuc columns
+2. Groups by "Class" and then creates new columns representing mean and median of our original numeric variables
+
+```{r}
+yeast %>%
+  select(-c('SeqName','Nuc')) %>%
+  group_by(Class) %>%
+  mutate(across(where(is.numeric),.fns=list(mean=mean,median=median),.names='Class_{.col}_{.fn}'))
+```
+
+## Task 3: Reading Excel Data
