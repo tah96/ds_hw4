@@ -76,3 +76,68 @@ yeast %>%
 ```
 
 ## Task 3: Reading Excel Data
+
+We will read in the White Wine data form our "files" folder and print out as a tibble
+
+```{r}
+white_wine <- readxl::read_excel(path='files/white-wine.xlsx')
+white_wine
+```
+
+We will fetch the variable names from the second sheet of the file. We will then assign those variable names to the first sheet (already read in).
+
+We will print out the Wine tibble again to make sure this worked.
+```{r}
+variable_names <- readxl::read_excel(path='files/white-wine.xlsx',sheet=2)
+
+colnames(white_wine) <- pull(variable_names,"Variables")
+white_wine
+```
+
+We'll also add a "color" column to our White tibble. This will be white for all values in this tibble.
+```{r}
+white_wine$wine_type <- "white"
+```
+
+Lets now read in the red white data, making sure our col_types match that of the white wine data set. We can do this using the map_chr function from the purrr library. We are also excluding the last column "color" since this is not included in the raw red wine data.
+
+We will also go ahead and add the appropriate color and rename the columns like we did with the white wine data.
+
+We will print out the final tibble
+
+```{r}
+red_wine <- readr::read_delim(file='https://www4.stat.ncsu.edu/~online/datasets/red-wine.csv',delim=";",col_types=head(map_chr(white_wine,typeof),-1),show_col_types=FALSE)
+
+colnames(red_wine) <- head(colnames(white_wine),-1)
+
+red_wine$wine_type = "red"
+
+red_wine
+```
+
+Now to combine (union) or two tibbles into one!
+
+```{r}
+wine <- dplyr::bind_rows(white_wine,red_wine)
+wine
+```
+
+Now lets apply a chain of functions to the data. The chain includes:
+1. Filter the data to only look at high-quality wines
+(quality > 6.5) and wines that have a reasonable alcohol value (alcohol < 132).
+2. Sort the data from highest quality to lowest.
+3. Select only the variables that contain acid, the alcohol variable, the type
+variable, and the quality variable.
+4. Add the mean and standard deviation of the alcohol variable to the data set
+for each setting of the quality variable.
+
+```{r}
+wine |>
+  filter(quality > 6.5 & alcohol < 132) |>
+  arrange(desc(quality)) |>
+  select(contains("acid"),alcohol,quality,wine_type) |>
+  group_by(quality) |>
+  mutate(across(alcohol,.fns=list(mean=mean,sd=sd),.names="quality_level_{.col}_{.fn}"))
+  
+```
+
