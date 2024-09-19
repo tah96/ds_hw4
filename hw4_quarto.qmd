@@ -7,29 +7,24 @@ editor: visual
 ## Task 1 - Q&A
 
 1.  If your working directory is myfolder/homework/, what relative path would you specify to get the file located at myfolder/MyData.csv?
-<blockquote> 
-../MyData.csv
-</blockquote>
-2.  What are the major benefits of using R projects?
-<blockquote>
-Some major benefits to using an R project include version control through git commands, consistent working directory and reproducability through centralized organization.
-</blockquote>
-3. What is git and what is github? 
-<blockquote>
-Git is a version control software that can use a series of bash commands for interacting with a repository. Github is an online repository hosting platform where users can interact with the repository using git and other methods.
-</blockquote>
-4. What are the two main differences between a tibble and a data.frame?
-<blockquote>
-Tibbles utilize "fancy print" when printed, meaning the output looks cleaner compared to data frames and includes important details along with the first few records of the object.  Tibbles, however, do not coerce down to a vector when you subset to only one column using "[ ]"
-</blockquote>
 
-5. Rewrite the following nested function call using BaseR's chaining operator: arrange(filter(select(as_tibble(iris), starts_with("Petal"), Species),Petal.Length \< 1.55), Species)
-<blockquote>
-as_tibble(iris) |>
-  select(starts_with("Petal"),Species) |>
-  filter(Petal.Length < 1.55) |>
-  arrange(Species)
-</blockquote>
+    <blockquote>../MyData.csv</blockquote>
+
+2.  What are the major benefits of using R projects?
+
+    <blockquote>Some major benefits to using an R project include version control through git commands, consistent working directory and reproducability through centralized organization.</blockquote>
+
+3.  What is git and what is github?
+
+    <blockquote>Git is a version control software that can use a series of bash commands for interacting with a repository. Github is an online repository hosting platform where users can interact with the repository using git and other methods.</blockquote>
+
+4.  What are the two main differences between a tibble and a data.frame?
+
+    <blockquote>Tibbles utilize "fancy print" when printed, meaning the output looks cleaner compared to data frames and includes important details along with the first few records of the object. Tibbles, however, do not coerce down to a vector when you subset to only one column using "\[ \]"</blockquote>
+
+5.  Rewrite the following nested function call using BaseR's chaining operator: arrange(filter(select(as_tibble(iris), starts_with("Petal"), Species),Petal.Length \< 1.55), Species)
+
+    <blockquote>as_tibble(iris) \|\> select(starts_with("Petal"),Species) \|\> filter(Petal.Length \< 1.55) \|\> arrange(Species)</blockquote>
 
 ## Task 2: Reading Delimited Data
 
@@ -46,9 +41,7 @@ glass
 
 ```
 
-Now we're going to transform the data using the tidyverse and chaining. The transformations are:
-1. Overwrite TypeOfGlass variable by mapping integers to string values
-2. Filter where Fe (Iron) is less than 0.2 AND Type Of Glass is tableware or headlamps
+Now we're going to transform the data using the tidyverse and chaining. The transformations are: 1. Overwrite TypeOfGlass variable by mapping integers to string values 2. Filter where Fe (Iron) is less than 0.2 AND Type Of Glass is tableware or headlamps
 
 ```{r}
 glass %>%
@@ -64,9 +57,7 @@ The Yeast Data is a fixed_width delimited file. Lets read it in and account for 
 yeast <- read_fwf(file="https://www4.stat.ncsu.edu/online/datasets/yeast.data",fwf_widths(c(12,6,6,6,6,6,6,6,6,6),c('SeqName','Mcg','Gvh','Alm','Mit','Erl','Pox','Vac','Nuc','Class')),show_col_types = FALSE)
 ```
 
-Now we're going to transform the data using the tidyverse and chaining. The transformations are:
-1. Remove SeqName and Nuc columns
-2. Groups by "Class" and then creates new columns representing mean and median of our original numeric variables
+Now we're going to transform the data using the tidyverse and chaining. The transformations are: 1. Remove SeqName and Nuc columns 2. Groups by "Class" and then creates new columns representing mean and median of our original numeric variables
 
 ```{r}
 yeast %>%
@@ -87,6 +78,7 @@ white_wine
 We will fetch the variable names from the second sheet of the file. We will then assign those variable names to the first sheet (already read in).
 
 We will print out the Wine tibble again to make sure this worked.
+
 ```{r}
 variable_names <- readxl::read_excel(path='files/white-wine.xlsx',sheet=2)
 
@@ -95,6 +87,7 @@ white_wine
 ```
 
 We'll also add a "color" column to our White tibble. This will be white for all values in this tibble.
+
 ```{r}
 white_wine$wine_type <- "white"
 ```
@@ -122,22 +115,14 @@ wine <- dplyr::bind_rows(white_wine,red_wine)
 wine
 ```
 
-Now lets apply a chain of functions to the data. The chain includes:
-1. Filter the data to only look at high-quality wines
-(quality > 6.5) and wines that have a reasonable alcohol value (alcohol < 132).
-2. Sort the data from highest quality to lowest.
-3. Select only the variables that contain acid, the alcohol variable, the type
-variable, and the quality variable.
-4. Add the mean and standard deviation of the alcohol variable to the data set
-for each setting of the quality variable.
+Now lets apply a chain of functions to the data. The chain includes: 1. Filter the data to only look at high-quality wines (quality \> 6.5) and wines that have a reasonable alcohol value (alcohol \< 132). 2. Sort the data from highest quality to lowest. 3. Select only the variables that contain acid, the alcohol variable, the type variable, and the quality variable. 4. Add the mean and standard deviation of the alcohol variable to the data set for each setting of the quality variable.
 
 ```{r}
-wine |>
-  filter(quality > 6.5 & alcohol < 132) |>
-  arrange(desc(quality)) |>
-  select(contains("acid"),alcohol,quality,wine_type) |>
-  group_by(quality) |>
+wine %>%
+  filter(quality > 6.5 & alcohol < 132) %>%
+  arrange(desc(quality)) %>%
+  select(contains("acid"),alcohol,quality,wine_type) %>%
+  group_by(quality) %>%
   mutate(across(alcohol,.fns=list(mean=mean,sd=sd),.names="quality_level_{.col}_{.fn}"))
   
 ```
-
